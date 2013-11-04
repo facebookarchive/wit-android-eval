@@ -1,0 +1,2 @@
+include ':Eval'
+include ':libraries:wit-android-sdk:wit.sdk'

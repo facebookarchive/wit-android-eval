@@ -1,0 +1,33 @@
+buildscript {
+    repositories {
+        maven { url 'http://repo1.maven.org/maven2' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.1'
+    }
+}
+
+apply plugin: 'android'
+
+task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
+    gradleVersion = '1.8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile files('libs/android-support-v4.jar')
+    compile project(":libraries:wit-android-sdk:wit.sdk")
+}
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "17.0.0"
+
+    defaultConfig {
+        minSdkVersion 11
+        targetSdkVersion 17
+    }
+}

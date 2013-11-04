@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:title="Instance Id"
+        android:key="instance_id"
+        android:summary="Instance Id"></EditTextPreference>
+    <EditTextPreference android:title="Access token"
+        android:key="access_token"
+        android:summary="Access token"></EditTextPreference>
+</PreferenceScreen>
