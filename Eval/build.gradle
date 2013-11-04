@@ -19,6 +19,7 @@ repositories {
 
 dependencies {
     compile files('libs/android-support-v4.jar')
+    compile files('libs/getPebble.jar')
     compile project(":libraries:wit-android-sdk:wit.sdk")
 }
 
