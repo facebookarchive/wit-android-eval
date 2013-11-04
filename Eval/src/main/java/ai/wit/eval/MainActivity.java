@@ -30,6 +30,7 @@ public class MainActivity extends Activity implements IWitListener {
     private TextView _txtText;
     private TextView _jsonView;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,18 +39,17 @@ public class MainActivity extends Activity implements IWitListener {
         _txtText = (TextView) findViewById(R.id.txtText);
         _jsonView = (TextView) findViewById(R.id.jsonView);
         _jsonView.setMovementMethod(new ScrollingMovementMethod());
+        setWitSetting();
     }
 
-    private void setWitSetting(){
+    private void setWitSetting() {
         SharedPreferences sharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
         String access_token = sharedPrefs.getString("access_token", "No accessToken");
-        String instance_id = sharedPrefs.getString("instance_id", "No instanceId");
         //Initialize Fragment
         Wit wit_fragment = (Wit) getFragmentManager().findFragmentByTag("wit_fragment");
         if (wit_fragment != null) {
             wit_fragment.setAccessToken(access_token);
-            wit_fragment.setInstanceId(instance_id);
         }
     }
 
