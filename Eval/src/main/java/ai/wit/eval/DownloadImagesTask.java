@@ -28,7 +28,7 @@ public class DownloadImagesTask extends AsyncTask<String, String, Bitmap> {
             final String image_keyword = params[0];
             final String image_url;
             URL url = new URL(
-                    "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&"
+                    "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&imgsz=small&"
                             + "q=" + URLEncoder.encode(image_keyword, "utf-8"));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             try {

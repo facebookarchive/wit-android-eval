@@ -33,16 +33,17 @@ public class PebbleConnector {
             if (intent.equals("alarm")) {
                 sendAlarmInformationToPebble(queue, entities);
             } else if (intent.equals("show_me_a_picture_of")) {
-                getImageAndSendToPebble(queue, entities, _imageView);
+                String image_keyword = entities.get("local_search_query").get("value").getAsString();
+                sendTextToPebble(queue, image_keyword, "Loading...", "","text");
+                getImageAndSendToPebble(queue, image_keyword, _imageView);
             } else {
                 sendTextToPebble(queue, "Intent :", intent, String.format("%s Entities", entities.size()), "text");
             }
         }
     }
 
-    private static void getImageAndSendToPebble(final PebbleQueue queue, HashMap<String, JsonObject> entities, final ImageView _imageView) {
+    private static void getImageAndSendToPebble(final PebbleQueue queue, String image_keyword, final ImageView _imageView) {
         //google search image
-        String image_keyword = entities.get("local_search_query").get("value").getAsString();
         DownloadImagesTask request = new DownloadImagesTask() {
             @Override
             protected void onPostExecute(Bitmap result) {
