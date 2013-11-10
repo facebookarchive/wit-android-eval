@@ -7,12 +7,28 @@
               android:gravity="center"
               android:orientation="vertical">
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
         <fragment
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:name="ai.wit.sdk.Wit"
-                tools:layout="@layout/wit_button"
-                android:tag="wit_fragment"/>
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:name="ai.wit.sdk.Wit"
+                    tools:layout="@layout/wit_button"
+                    android:tag="wit_fragment"
+            android:layout_gravity="center" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:minHeight="128px"
+            android:minWidth="128px"
+            android:focusableInTouchMode="true" />
+    </LinearLayout>
 
     <TextView
             android:id="@+id/txtText"

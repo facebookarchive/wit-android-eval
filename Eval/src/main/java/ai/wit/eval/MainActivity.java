@@ -15,6 +15,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.getpebble.android.kit.PebbleKit;
@@ -23,11 +24,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import ai.wit.sdk.IWitListener;
@@ -38,14 +35,14 @@ public class MainActivity extends Activity implements IWitListener {
 
     private static final int RESULT_SETTINGS = 1;
     private static final int REC_KEY = 0;
-    private static final int ALARM_KEY = 0;
-    private static final int TIMESTAMP_KEY = 1;
     private PebbleKit.PebbleDataReceiver dataReceiver;
     private PebbleKit.PebbleAckReceiver ackReceiver;
     private PebbleKit.PebbleNackReceiver nackReceiver;
-    private static final UUID WIT_ALARM_UUID = UUID.fromString("ee7e8823-a43c-49a4-b677-7a6980e8c088");
+    private static final UUID WIT_ALARM_UUID = UUID.fromString("2342a32d-1941-4d7b-ba03-55f824d8bde1");
     private TextView _txtText;
     private TextView _jsonView;
+    private ImageView _imageView;
+    private PebbleQueue _pebbleQueue;
 
 
     @Override
@@ -55,8 +52,19 @@ public class MainActivity extends Activity implements IWitListener {
 
         _txtText = (TextView) findViewById(R.id.txtText);
         _jsonView = (TextView) findViewById(R.id.jsonView);
+        _imageView = (ImageView) findViewById(R.id.imageView);
         _jsonView.setMovementMethod(new ScrollingMovementMethod());
         setWitSetting();
+        //Link pebble
+        linkPebble();
+        _pebbleQueue = new PebbleQueue(getApplicationContext(), WIT_ALARM_UUID);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //Unlink Pebble
+        unlinkPebble();
     }
 
     private void setWitSetting() {
@@ -105,29 +113,11 @@ public class MainActivity extends Activity implements IWitListener {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonOutput = gson.toJson(entities);
         _jsonView.setText(Html.fromHtml("<span><b>Intent: " + intent + "<b></span><br/>") + jsonOutput + Html.fromHtml("<br/><span><b>Confidence: " + confidence + "<b></span>"));
-        if (intent != null && intent.equals("alarm")) {
-            //Send to pebble
-            String from = entities.get("datetime").getAsJsonObject("value").get("from").getAsString();
-            try {
-                Date time = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(from);
-                PebbleDictionary data = new PebbleDictionary();
-                data.addString(ALARM_KEY, "set_alarm");
-                int gmtOffset = TimeZone.getDefault().getRawOffset();
-                String timeToSend = String.valueOf((time.getTime() + gmtOffset) / 1000);
-                Log.d("Pebble time" , timeToSend);
-                data.addString(TIMESTAMP_KEY, timeToSend);
-                PebbleKit.sendDataToPebble(getApplicationContext(), WIT_ALARM_UUID, data);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
+        PebbleConnector.processIntent(_pebbleQueue, intent, entities, _imageView);
     }
 
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Always deregister any Activity-scoped BroadcastReceivers when the Activity is paused
+    protected void unlinkPebble() {
         if (dataReceiver != null) {
             unregisterReceiver(dataReceiver);
             dataReceiver = null;
@@ -144,9 +134,7 @@ public class MainActivity extends Activity implements IWitListener {
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    protected void linkPebble() {
         // In order to interact with the UI thread from a broadcast receiver, we need to perform any updates through
         // an Android handler. For more information, see: http://developer.android.com/reference/android/os/Handler
         // .html
@@ -172,10 +160,11 @@ public class MainActivity extends Activity implements IWitListener {
 
                         final String recKey = data.getString(REC_KEY);
                         if (recKey != null) {
-                            Log.d("Pebble Input: ", recKey);
+                            Log.d("Wit ", "Pebble Input: " + recKey);
+
                             Wit wit_fragment = (Wit) getFragmentManager().findFragmentByTag("wit_fragment");
                             if (wit_fragment != null) {
-                                wit_fragment.triggerRec();
+                                wit_fragment.triggerRec(true);
                             }
                         }
                     }
@@ -189,6 +178,7 @@ public class MainActivity extends Activity implements IWitListener {
             @Override
             public void receiveAck(final Context context, final int transactionId) {
                 Log.d("Pebble ACK ", String.valueOf(transactionId));
+                _pebbleQueue.Ack(transactionId);
             }
         };
 
@@ -199,6 +189,7 @@ public class MainActivity extends Activity implements IWitListener {
             @Override
             public void receiveNack(final Context context, final int transactionId) {
                 Log.d("Pebble NACK ", String.valueOf(transactionId));
+                _pebbleQueue.Ack(transactionId);
             }
         };
 
