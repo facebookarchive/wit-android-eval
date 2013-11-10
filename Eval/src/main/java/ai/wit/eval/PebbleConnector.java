@@ -42,7 +42,7 @@ public class PebbleConnector {
         }
     }
 
-    private static void getImageAndSendToPebble(final PebbleQueue queue, String image_keyword, final ImageView _imageView) {
+    private static void getImageAndSendToPebble(final PebbleQueue queue, final String image_keyword, final ImageView _imageView) {
         //google search image
         DownloadImagesTask request = new DownloadImagesTask() {
             @Override
@@ -53,6 +53,9 @@ public class PebbleConnector {
                     Bitmap ditheredImage = dither(result);
                     _imageView.setImageBitmap(ditheredImage);
                     sendImageToPebble(ditheredImage, queue);
+                }
+                else {
+                    sendTextToPebble(queue, image_keyword, "No image found", "","text");
                 }
             }
         };
