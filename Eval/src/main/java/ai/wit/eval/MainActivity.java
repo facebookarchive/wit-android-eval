@@ -43,6 +43,7 @@ public class MainActivity extends Activity implements IWitListener {
     private TextView _jsonView;
     private ImageView _imageView;
     private PebbleQueue _pebbleQueue;
+    private double _threshold_ok;
 
 
     @Override
@@ -71,6 +72,7 @@ public class MainActivity extends Activity implements IWitListener {
         SharedPreferences sharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
         String access_token = sharedPrefs.getString("access_token", "No accessToken");
+        _threshold_ok = Float.parseFloat(sharedPrefs.getString("threshold", "0.5f"));
         //Initialize Fragment
         Wit wit_fragment = (Wit) getFragmentManager().findFragmentByTag("wit_fragment");
         if (wit_fragment != null) {
@@ -110,10 +112,16 @@ public class MainActivity extends Activity implements IWitListener {
     @Override
     public void witDidGraspIntent(String intent, HashMap<String, JsonObject> entities, String body, double confidence, Error error) {
         _txtText.setText(body);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonOutput = gson.toJson(entities);
-        _jsonView.setText(Html.fromHtml("<span><b>Intent: " + intent + "<b></span><br/>") + jsonOutput + Html.fromHtml("<br/><span><b>Confidence: " + confidence + "<b></span>"));
-        PebbleConnector.processIntent(_pebbleQueue, intent, entities, _imageView);
+        if (confidence > _threshold_ok) {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            String jsonOutput = gson.toJson(entities);
+            _jsonView.setText(Html.fromHtml("<span><b>Intent: " + intent + "<b></span><br/>") + jsonOutput + Html.fromHtml("<br/><span><b>Confidence: " + confidence + "<b></span>"));
+            PebbleConnector.processIntent(_pebbleQueue, intent, entities, _imageView);
+        }
+        else {
+            _jsonView.setText("Wit didn't catch that\n\n???");
+            PebbleConnector.SendTextToPebble(_pebbleQueue, "didn't catch that..", "?", "", "text");
+        }
     }
 
 

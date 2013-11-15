@@ -32,13 +32,19 @@ public class PebbleConnector {
         if (intent != null) {
             if (intent.equals("alarm")) {
                 sendAlarmInformationToPebble(queue, entities);
-            } else if (intent.equals("show_me_a_picture_of")) {
-                String image_keyword = entities.get("local_search_query").get("value").getAsString();
-                sendTextToPebble(queue, image_keyword, "Loading...", "","text");
+            } else if (intent.equals("image")) {
+                String image_keyword = "?";
+                if (entities.get("topic") != null) {
+                   image_keyword = entities.get("topic").get("value").getAsString();
+                }
+                SendTextToPebble(queue, image_keyword, "Loading...", "", "text");
                 getImageAndSendToPebble(queue, image_keyword, _imageView);
             } else {
-                sendTextToPebble(queue, "Intent :", intent, String.format("%s Entities", entities.size()), "text");
+                SendTextToPebble(queue, "Intent :", intent, String.format("%s Entities", entities.size()), "text");
             }
+        }
+        else {
+            SendTextToPebble(queue, "Wit didn't catch", "?", "", "text");
         }
     }
 
@@ -55,7 +61,7 @@ public class PebbleConnector {
                     sendImageToPebble(ditheredImage, queue);
                 }
                 else {
-                    sendTextToPebble(queue, image_keyword, "No image found", "","text");
+                    SendTextToPebble(queue, image_keyword, "No image found", "", "text");
                 }
             }
         };
@@ -131,13 +137,13 @@ public class PebbleConnector {
             Date dateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(from);
             String date = new SimpleDateFormat("MM/d/yy").format(dateTime);
             String time = new SimpleDateFormat("HH:mm a").format(dateTime);
-            sendTextToPebble(queue, "Alarm set to", date, time, "text");
+            SendTextToPebble(queue, "Alarm set to", date, time, "text");
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    private static void sendTextToPebble(PebbleQueue queue, String firstLine, String secondLine, String thirdLine, String msgType) {
+    public static void SendTextToPebble(PebbleQueue queue, String firstLine, String secondLine, String thirdLine, String msgType) {
         //Send to pebble
         try {
             PebbleDictionary data = new PebbleDictionary();

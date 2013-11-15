@@ -2,5 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <EditTextPreference android:title="Access token"
         android:key="access_token"
+        android:persistent="true"
         android:summary="Access token"></EditTextPreference>
+    <EditTextPreference android:title="Threshold"
+        android:key="threshold"
+        android:summary="Threshold"
+        android:defaultValue="0.5"
+        android:persistent="true"
+        android:numeric="decimal"></EditTextPreference>
 </PreferenceScreen>
