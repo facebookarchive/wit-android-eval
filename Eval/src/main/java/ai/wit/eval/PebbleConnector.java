@@ -1,7 +1,10 @@
 package ai.wit.eval;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.os.Build;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -14,6 +17,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by oliv on 11/6/13.
@@ -27,28 +31,124 @@ public class PebbleConnector {
     private static final int THIRD_LINE_KEY = 4;
     private static final int IMAGE_KEY = 5;
     private static final int IMAGE_OFFSET = 6;
+    private TextToSpeech _tts;
+    private String _last_alarm_date;
+    private String _last_alarm_time;
 
-    public static void processIntent(PebbleQueue queue, String intent, HashMap<String, JsonObject> entities, final ImageView _imageView) {
+    public void SetTTS(TextToSpeech tts) {
+        _tts = tts;
+    }
+
+    public void processIntent(final PebbleQueue queue, String intent, HashMap<String, JsonObject> entities, final ImageView _imageView) {
         if (intent != null) {
-            if (intent.equals("alarm")) {
-                sendAlarmInformationToPebble(queue, entities);
+            if (intent.equals("hello")) {
+                SendTextToPebble(queue, "", "Hello!", "", "text");
+                speak("Hello");
+            } else if (intent.equals("alarm")) {
+                processAlarm(queue, entities);
+            } else if (intent.equals("show_alarms")) {
+                SendTextToPebble(queue, "Current Alarms", _last_alarm_date, _last_alarm_time, "text");
+                speak("You have 2 alarms set");
             } else if (intent.equals("image")) {
-                String image_keyword = "?";
-                if (entities.get("topic") != null) {
-                   image_keyword = entities.get("topic").get("value").getAsString();
-                }
-                SendTextToPebble(queue, image_keyword, "Loading...", "", "text");
-                getImageAndSendToPebble(queue, image_keyword, _imageView);
+                processImage(queue, entities, _imageView);
+            } else if (intent.equals("caltrain")) {
+                processCaltrain(queue, entities);
+            } else if (intent.equals("time")) {
+                processTime(queue, entities);
+            } else if (intent.equals("weather")) {
+                processWeather(queue, entities);
             } else {
                 SendTextToPebble(queue, "Intent :", intent, String.format("%s Entities", entities.size()), "text");
             }
-        }
-        else {
+        } else {
             SendTextToPebble(queue, "Wit didn't catch", "?", "", "text");
         }
     }
 
-    private static void getImageAndSendToPebble(final PebbleQueue queue, final String image_keyword, final ImageView _imageView) {
+    private void processWeather(final PebbleQueue queue, HashMap<String, JsonObject> entities) {
+        String location = "Mountain View, Ca";
+        if (entities.get("location") != null) {
+            location = entities.get("location").get("value").getAsString();
+        }
+        final String finalLocation = location;
+        WeatherTask request = new WeatherTask() {
+            @Override
+            protected void onPostExecute(List<String> result) {
+                SendTextToPebble(queue, finalLocation, result.get(1), "right now", "text");
+                speak(result.get(0));
+            }
+        };
+        request.execute(location);
+    }
+
+    private void processTime(final PebbleQueue queue, HashMap<String, JsonObject> entities) {
+        if (entities.get("location") == null) {
+            String time = new SimpleDateFormat("H:mm a").format(new Date());
+            SendTextToPebble(queue, "", time, "", "text");
+            speak("it's " + time + " at your location.");
+            return;
+        }
+        final String location_to_search = entities.get("location").get("value").getAsString();
+        TimeTask request = new TimeTask() {
+            @Override
+            protected void onPostExecute(String result) {
+                SendTextToPebble(queue, "it's", result, "in " + location_to_search, "text");
+                speak("it's " + result + " in " + location_to_search);
+            }
+        };
+        request.execute(location_to_search);
+    }
+
+    private void processImage(PebbleQueue queue, HashMap<String, JsonObject> entities, ImageView _imageView) {
+        String image_keyword = "?";
+        if (entities.get("topic") != null) {
+            image_keyword = entities.get("topic").get("value").getAsString();
+        }
+        SendTextToPebble(queue, image_keyword, "Loading...", "", "text");
+        getImageAndSendToPebble(queue, image_keyword, _imageView);
+    }
+
+    private void processCaltrain(final PebbleQueue queue, HashMap<String, JsonObject> entities) {
+        if (entities.get("direction") == null) {
+            SendTextToPebble(queue, "Which direction ?", "SF or SJ", "", "text");
+            speak("Which direction ?");
+            return;
+        }
+        final String direction = entities.get("direction").get("value").getAsString();
+        if (direction.equals("LA")) {
+            SendTextToPebble(queue, "Dude, consider", "Hyperloop", "", "text");
+            speak("Sorry the Hyperloop is not there yet. I'm texting Elon right now");
+            return;
+        }
+        if (!direction.equals("SF") && !direction.equals("SJ")) {
+            SendTextToPebble(queue, "I don't know this", "direction", "", "text");
+            speak("I don't know this direction");
+            return;
+        }
+        //google search image
+        final String finalDirection = direction;
+        CaltrainTask request = new CaltrainTask() {
+            @Override
+            protected void onPostExecute(Integer result) {
+                if (result != Integer.MAX_VALUE) {
+                    long t = (new Date()).getTime();
+                    Date dateTime = new Date(t + (result * 60000));
+                    String time = new SimpleDateFormat("H:mm a").format(dateTime);
+                    SendTextToPebble(queue, "Next train => " + finalDirection, time, "", "text");
+                    speak("Next train at: " + time);
+                } else {
+                    //Hack for YC demo
+                    String time = "10:45 am";
+                    SendTextToPebble(queue, "Next train => " + finalDirection, time, "", "text");
+                    speak("Next train at: " + time);
+                    //SendTextToPebble(queue, "To " + direction, "Caltrain API is", "down", "text");
+                }
+            }
+        };
+        request.execute(direction);
+    }
+
+    private void getImageAndSendToPebble(final PebbleQueue queue, final String image_keyword, final ImageView _imageView) {
         //google search image
         DownloadImagesTask request = new DownloadImagesTask() {
             @Override
@@ -59,8 +159,7 @@ public class PebbleConnector {
                     Bitmap ditheredImage = dither(result);
                     _imageView.setImageBitmap(ditheredImage);
                     sendImageToPebble(ditheredImage, queue);
-                }
-                else {
+                } else {
                     SendTextToPebble(queue, image_keyword, "No image found", "", "text");
                 }
             }
@@ -68,7 +167,8 @@ public class PebbleConnector {
         request.execute(image_keyword);
     }
 
-    private static void sendImageToPebble(Bitmap ditheredImage, PebbleQueue queue) {
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void sendImageToPebble(Bitmap ditheredImage, PebbleQueue queue) {
         //long imageInBitRepresentation = 0;
         // Put it into the output
         int h = ditheredImage.getHeight();
@@ -81,7 +181,7 @@ public class PebbleConnector {
         int data_size = 900;
         byte[] all = set.toByteArray();
         for (int offset = 0; offset < all.length; offset += data_size) {
-            byte[] current = Arrays .copyOfRange(all, offset, offset + data_size);
+            byte[] current = Arrays.copyOfRange(all, offset, offset + data_size);
             PebbleDictionary data = new PebbleDictionary();
             data.addString(MSG_KEY, "image");
             data.addInt32(IMAGE_OFFSET, offset);
@@ -91,7 +191,7 @@ public class PebbleConnector {
         }
     }
 
-    private static int getPixel(Bitmap img, int x, int y) {
+    private int getPixel(Bitmap img, int x, int y) {
         int pixel = img.getPixel(x, y);
         int R = Color.red(pixel);
         int G = Color.green(pixel);
@@ -99,11 +199,11 @@ public class PebbleConnector {
         return (int) (0.299 * R + 0.587 * G + 0.114 * B);
     }
 
-    private static void setPixel(Bitmap map, int x, int y, int gray) {
+    private void setPixel(Bitmap map, int x, int y, int gray) {
         map.setPixel(x, y, Color.rgb(gray, gray, gray));
     }
 
-    private static Bitmap dither(Bitmap img) {
+    private Bitmap dither(Bitmap img) {
         int h = img.getHeight();
         int w = img.getWidth();
         Bitmap result = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -130,7 +230,7 @@ public class PebbleConnector {
         return result;
     }
 
-    private static void sendAlarmInformationToPebble(PebbleQueue queue, HashMap<String, JsonObject> entities) {
+    private void processAlarm(PebbleQueue queue, HashMap<String, JsonObject> entities) {
         //Send to pebble
         String from = entities.get("datetime").getAsJsonObject("value").get("from").getAsString();
         try {
@@ -138,12 +238,16 @@ public class PebbleConnector {
             String date = new SimpleDateFormat("MM/d/yy").format(dateTime);
             String time = new SimpleDateFormat("HH:mm a").format(dateTime);
             SendTextToPebble(queue, "Alarm set to", date, time, "text");
+            _last_alarm_date = date;
+            _last_alarm_time = time;
+            String day = new SimpleDateFormat("EEEE").format(dateTime);
+            speak("Alarm set " + day + " at " + time);
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public static void SendTextToPebble(PebbleQueue queue, String firstLine, String secondLine, String thirdLine, String msgType) {
+    public void SendTextToPebble(PebbleQueue queue, String firstLine, String secondLine, String thirdLine, String msgType) {
         //Send to pebble
         try {
             PebbleDictionary data = new PebbleDictionary();
@@ -164,5 +268,9 @@ public class PebbleConnector {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void speak(String text) {
+        _tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
     }
 }

@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.getpebble.android.kit.PebbleKit;
 import com.getpebble.android.kit.util.PebbleDictionary;
@@ -25,16 +27,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.UUID;
 
 import ai.wit.sdk.IWitListener;
 import ai.wit.sdk.Wit;
 import ai.wit.wit.R;
 
-public class MainActivity extends Activity implements IWitListener {
+public class MainActivity extends Activity implements IWitListener, TextToSpeech.OnInitListener {
 
     private static final int RESULT_SETTINGS = 1;
     private static final int REC_KEY = 0;
+    private static final int MY_DATA_CHECK_CODE = 3;
     private PebbleKit.PebbleDataReceiver dataReceiver;
     private PebbleKit.PebbleAckReceiver ackReceiver;
     private PebbleKit.PebbleNackReceiver nackReceiver;
@@ -44,6 +48,10 @@ public class MainActivity extends Activity implements IWitListener {
     private ImageView _imageView;
     private PebbleQueue _pebbleQueue;
     private double _threshold_ok;
+    //TTS object
+    private TextToSpeech myTTS;
+    private PebbleConnector _pebbleConnector;
+
 
 
     @Override
@@ -59,6 +67,11 @@ public class MainActivity extends Activity implements IWitListener {
         //Link pebble
         linkPebble();
         _pebbleQueue = new PebbleQueue(getApplicationContext(), WIT_ALARM_UUID);
+        //check for TTS data
+        Intent checkTTSIntent = new Intent();
+        checkTTSIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkTTSIntent, MY_DATA_CHECK_CODE);
+        _pebbleConnector = new PebbleConnector();
     }
 
     @Override
@@ -106,6 +119,19 @@ public class MainActivity extends Activity implements IWitListener {
             case RESULT_SETTINGS:
                 setWitSetting();
                 break;
+            case MY_DATA_CHECK_CODE:
+                if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                    //the user has the necessary data - create the TTS
+                    myTTS = new TextToSpeech(this, this);
+                    _pebbleConnector.SetTTS(myTTS);
+                }
+                else {
+                    //no data - install it now
+                    Intent installTTSIntent = new Intent();
+                    installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                    startActivity(installTTSIntent);
+                }
+                break;
         }
     }
 
@@ -116,11 +142,11 @@ public class MainActivity extends Activity implements IWitListener {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String jsonOutput = gson.toJson(entities);
             _jsonView.setText(Html.fromHtml("<span><b>Intent: " + intent + "<b></span><br/>") + jsonOutput + Html.fromHtml("<br/><span><b>Confidence: " + confidence + "<b></span>"));
-            PebbleConnector.processIntent(_pebbleQueue, intent, entities, _imageView);
+            _pebbleConnector.processIntent(_pebbleQueue, intent.toLowerCase(), entities, _imageView);
         }
         else {
             _jsonView.setText("Wit didn't catch that\n\n???");
-            PebbleConnector.SendTextToPebble(_pebbleQueue, "didn't catch that..", "?", "", "text");
+            _pebbleConnector.SendTextToPebble(_pebbleQueue, "didn't catch that..", "?", "", "text");
         }
     }
 
@@ -204,4 +230,19 @@ public class MainActivity extends Activity implements IWitListener {
         PebbleKit.registerReceivedNackHandler(this, nackReceiver);
     }
 
+    @Override
+    public void onInit(int status) {
+        //check for successful instantiation
+        if (status == TextToSpeech.SUCCESS) {
+            if(myTTS.isLanguageAvailable(Locale.US)==TextToSpeech.LANG_AVAILABLE)
+                myTTS.setLanguage(Locale.US);
+        }
+        else if (status == TextToSpeech.ERROR) {
+            Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void speak(String speech) {
+        myTTS.speak(speech, TextToSpeech.QUEUE_FLUSH, null);
+    }
 }
