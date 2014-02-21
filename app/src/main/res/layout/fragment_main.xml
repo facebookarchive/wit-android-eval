@@ -34,6 +34,11 @@
         android:layout_gravity="bottom|left|right|top"
         android:background="#e4e4e4"
         android:maxLines = "100"
-        android:scrollbars = "vertical"/>
+        android:scrollbars = "vertical"
+        android:enabled="true"
+        android:clickable="true"
+        android:scrollbarStyle="insideOverlay"
+        android:fadeScrollbars="true"
+        android:fadingEdge="vertical"/>
 
 </LinearLayout>

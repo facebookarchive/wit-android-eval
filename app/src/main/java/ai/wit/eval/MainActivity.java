@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,16 +35,14 @@ public class MainActivity extends ActionBarActivity implements IWitListener {
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState == null) {
-            _placeholderFragment = new PlaceholderFragment();
+            _placeholderFragment = new PlaceholderFragment(this);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, _placeholderFragment)
                     .commit();
         }
-
-        setWitSetting();
     }
 
-    private void setWitSetting() {
+    public void setWitSetting() {
         SharedPreferences sharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
         String access_token = sharedPrefs.getString("access_token", "No accessToken");
@@ -92,7 +89,7 @@ public class MainActivity extends ActionBarActivity implements IWitListener {
     @Override
     public void witDidGraspIntent(String intent, HashMap<String, JsonElement> entities, String body, double confidence, Error error) {
         ((TextView) findViewById(R.id.txtText)).setText(body);
-        ((TextView) findViewById(R.id.txtText)).setMovementMethod(new ScrollingMovementMethod());
+        ((TextView) findViewById(R.id.jsonView)).setMovementMethod(new ScrollingMovementMethod());
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String jsonOutput = gson.toJson(entities);
         ((TextView) findViewById(R.id.jsonView)).setText(Html.fromHtml("<span><b>Intent: " + intent +
@@ -105,14 +102,17 @@ public class MainActivity extends ActionBarActivity implements IWitListener {
      */
     public static class PlaceholderFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        private final MainActivity _activity;
+
+        public PlaceholderFragment(MainActivity activity) {
+            _activity = activity;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
+            _activity.setWitSetting();
             return rootView;
         }
     }
