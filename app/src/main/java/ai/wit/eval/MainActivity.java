@@ -1,5 +1,6 @@
 package ai.wit.eval;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -35,7 +36,7 @@ public class MainActivity extends ActionBarActivity implements IWitListener {
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState == null) {
-            _placeholderFragment = new PlaceholderFragment(this);
+            _placeholderFragment = new PlaceholderFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, _placeholderFragment)
                     .commit();
@@ -102,10 +103,15 @@ public class MainActivity extends ActionBarActivity implements IWitListener {
      */
     public static class PlaceholderFragment extends Fragment {
 
-        private final MainActivity _activity;
+        private MainActivity _activity;
 
-        public PlaceholderFragment(MainActivity activity) {
-            _activity = activity;
+        public PlaceholderFragment() {
+        }
+
+        @Override
+        public void onAttach (Activity activity){
+            super.onAttach(activity);
+            _activity = (MainActivity) activity;
         }
 
         @Override
