@@ -1,10 +1,15 @@
-## Android demo App
+# WitEval for wit-android-sdk 3.0.0
 
-### Dev HOW TO RUN
+Simple app to quickly test different Wit instances.
 
-1. Download [Android Studio] (http://developer.android.com/sdk/installing/studio.html)
-2. Checkout this app
-3. in the root folder of the app execute a 'gradle assemble'
-4. Open app with Android Studio (click "Import Project" and select the folder,
-  then select "import project from external model -> gradle", then the recommanded option.)
-5. You can then launch the app on a device.
+## Getting started
+
+Open this project using Android Studio (0.8.6 if possible).
+
+Set your Wit Access Token in the class `MyActivity`
+
+```Java
+String accessToken = "xxx";
+```
+
+Run it!

@@ -1,0 +1,42 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".MyActivity">
+
+    <fragment
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:name="ai.wit.eval.wit_eval.MyActivity$PlaceholderFragment"
+        android:layout_centerHorizontal="true"
+        tools:layout="@layout/wit_button"
+        />
+
+    <TextView
+        android:id="@+id/txtText"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="italic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:background="#e4e4e4"
+        android:text="The spoken text will show up here"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="220dp"
+        android:text="The semantic results will show up here"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:id="@+id/jsonView"
+        android:background="#e4e4e4"
+        android:maxLines = "100"
+        android:scrollbars = "vertical"
+        />
+
+</RelativeLayout>

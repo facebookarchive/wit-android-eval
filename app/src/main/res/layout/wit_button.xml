@@ -10,4 +10,6 @@
     android:focusable="false"
     android:adjustViewBounds="false"
     android:baselineAlignBottom="false"
-    android:background="@drawable/custom_button"/>
+    android:background="@drawable/custom_button"
+    android:onClick="toggle"
+    />
