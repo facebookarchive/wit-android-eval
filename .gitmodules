@@ -1,3 +1,0 @@
-[submodule "libraries/wit-android-sdk"]
-	path = libraries/wit-android-sdk
-	url = git@weirche.github.com:wit-ai/wit-android-sdk.git
