@@ -1,15 +1,15 @@
-# WitEval for wit-android-sdk 3.0.0
+# WitEval for wit-android-sdk 3.1.1
 
-Simple app to quickly test different Wit instances.
+Simple app to quickly get started with Wit Android SDK.
 
 ## Getting started
 
-Open this project using Android Studio (0.8.6 if possible).
+Open this project using Android Studio (1.0 and up).
 
-Set your Wit Access Token in the class `MyActivity`
+Set your Wit Client Access Token in the class `MyActivity`
 
 ```Java
-String accessToken = "xxx";
+String accessToken = "YOUR CLIENT ACCESS TOKEN HERE";
 ```
 
 Run it!
