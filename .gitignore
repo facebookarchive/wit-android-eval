@@ -1,7 +1,4 @@
-.idea
-.gradle
-Eval/build
-.DS_Store
-*.iml
-*~
-/build
+WitEval/build
+WitEval/app/build
+WitEval/local.properties
+WitEval/.gradle
