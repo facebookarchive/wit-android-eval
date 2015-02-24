@@ -1,4 +1,4 @@
-package ai.wit.eval.witeval;
+package ai.wit.eval.wit_eval;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

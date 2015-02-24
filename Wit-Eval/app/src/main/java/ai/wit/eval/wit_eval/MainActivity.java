@@ -1,4 +1,4 @@
-package ai.wit.eval.witeval;
+package ai.wit.eval.wit_eval;
 
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -22,14 +22,14 @@ import ai.wit.sdk.Wit;
 import ai.wit.sdk.model.WitOutcome;
 
 
-public class MyActivity extends ActionBarActivity implements IWitListener {
+public class MainActivity extends ActionBarActivity implements IWitListener {
 
     Wit _wit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_my);
+        setContentView(R.layout.activity_main);
         String accessToken = "YOUR CLIENT ACCESS TOKEN HERE";
         _wit = new Wit(accessToken, this);
         _wit.enableContextLocation(getApplicationContext());
@@ -40,7 +40,7 @@ public class MyActivity extends ActionBarActivity implements IWitListener {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my, menu);
+        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 

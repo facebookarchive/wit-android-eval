@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "ai.wit.eval.witeval"
+        applicationId "ai.wit.eval.wit_eval"
         minSdkVersion 11
         targetSdkVersion 21
         versionCode 1
@@ -21,7 +21,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
+    compile 'com.android.support:appcompat-v7:21.0.3'
 }
