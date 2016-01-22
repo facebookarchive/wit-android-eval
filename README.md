@@ -6,7 +6,7 @@ Simple app to quickly get started with Wit Android SDK.
 
 Open this project using Android Studio (1.0 and up).
 
-Set your Wit Client Access Token in the class `MyActivity`
+Set your Wit Client Access Token in the class `MainActivity`
 
 ```Java
 String accessToken = "YOUR CLIENT ACCESS TOKEN HERE";
